@@ -32,8 +32,14 @@ async function veritiGetirveKaydet(id) {
         console.log("İnternetten veri çekme işlemi başlatıldı");
         const cevap=await fetch(api);
         const veri=await cevap.json();
+        const temizveri={
+            id:veri.id,
+            baslik:veri.title.toUpperCase(),
+            icerik:veri.body,
+            kayitTarihi:new Date().toISOString()
+        };
         console.log("Veri çekildi şimdi dosyaya yazılıyor...");
-        await fs.writeFile(`veri-${id}.json`,JSON.stringify(veri,null,2));
+        await fs.writeFile(`veri-${id}.json`,JSON.stringify(temizveri,null,2));
     }
     catch(hata){
         console.error("Bir şeyler yanlış gitti yakalanan hata: ",hata.message);
