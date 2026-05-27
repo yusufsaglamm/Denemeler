@@ -3,6 +3,29 @@ const fs=require('fs').promises;
 const { error } = require('console');
 const readline=require('readline/promises');
 const{stdin:input,stdout:output}=require('process');
+const { json } = require('stream/consumers');
+const DOSYA_ADI="tum_postalar.json";
+
+async function dosyayaKaydet(yeniveri) {
+    let tumveriler=[];
+    try{
+        const dosyaveri=await fs.readFile(DOSYA_ADI,'utf-8');
+        tumveriler=JSON.parse(dosyaveri);
+    }
+    catch(hata){
+        console.log("Daha önce dosya oluşturulmamış bos dosya oluşturuluyor");
+        tumveriler=[];
+    }
+    tumveriler.push(yeniveri);
+
+    try{
+        await fs.writeFile(DOSYA_ADI,JSON.stringify(tumveriler,null,2));
+        console.log("Veriler başarılı şekile kaydedildi");
+    }
+     catch(yazmahatasi){
+        console.log("Veriler yazılırken hata oluştu oluşan hata: ",yazmahatasi.message);
+     }
+}
 
 async function kullanicidanAl() {
     const rl=readline.createInterface({input,output});
@@ -14,7 +37,8 @@ async function kullanicidanAl() {
         }
         else{
             console.log("Id alındı işleme devam ediliyor");
-            await veritiGetirveKaydet(secilenID);
+            const verii=await veriyiGetirveKaydet(secilenID);
+            await dosyayaKaydet(verii);
         }
     }
     catch(hata){
@@ -26,7 +50,7 @@ async function kullanicidanAl() {
     
 }
 
-async function veritiGetirveKaydet(id) {
+async function veriyiGetirveKaydet(id) {
     const api=`https://jsonplaceholder.typicode.com/posts/${id}`;
     try{
         console.log("İnternetten veri çekme işlemi başlatıldı");
@@ -39,7 +63,7 @@ async function veritiGetirveKaydet(id) {
             kayitTarihi:new Date().toISOString()
         };
         console.log("Veri çekildi şimdi dosyaya yazılıyor...");
-        await fs.writeFile(`veri-${id}.json`,JSON.stringify(temizveri,null,2));
+        return temizveri;
     }
     catch(hata){
         console.error("Bir şeyler yanlış gitti yakalanan hata: ",hata.message);
